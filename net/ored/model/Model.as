@@ -34,12 +34,12 @@ package net.ored.model
 			Out.status(this,"initialize();");
 			
 		 	
-			if(Environment.IS_IN_BROWSER){
+			/*if(Environment.IS_IN_BROWSER){
 				_flashvars = $loaderInfo.parameters;
 				_baseUrl =  unescape(getFlashVar("baseUrl")); 
 				
 			}
-			else  _baseUrl = "http://owen.local/";
+			else  */_baseUrl = "http://www.ored.net/";
 			
 			Out.info(this, "Here is the base URL: "+ _baseUrl);
 			

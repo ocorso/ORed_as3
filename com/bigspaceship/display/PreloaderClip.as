@@ -126,7 +126,7 @@ package com.bigspaceship.display
 		// the timeline goes away.	
 		private function _animateOut():void
 		{
-			gotoAndPlay("OUT");
+			gotoAndPlay("OUT_START");
 			addEventListener(AnimationEvent.OUT, _onPreloaderOut,false,0,true);			
 		};
 

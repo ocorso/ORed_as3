@@ -63,31 +63,25 @@ package {
 		private const configId:String
 		public function Main()
 		{
+			if(!stage) addEventListener(Event.ADDED_TO_STAGE,_init,false,0,true);
+			else _init();
+			
+			_init();
+		}//end constructor
+		
+		protected function _init():void{
+			Out.status(this, "init()::");
+			removeEventListener(Event.ADDED_TO_STAGE,_init);
 			
 			_m = Model.getInstance();
-			//get flashvars
-			if(Environment.IS_IN_BROWSER){
-				//Out.clear();
-				//debugger = new MonsterDebugger(this);	
-				
-				Out.status(this, "baseUrl: " + stage.loaderInfo.parameters.baseUrl);
-				_m.initialize(stage.loaderInfo); isInBrowser = true;
-			}
-			else {
+			_m.initialize();
+			
+			if(!Environment.IS_IN_BROWSER){
 				Out.enableAllLevels();
 				Out.registerDebugger(new ArthropodAdapter(true));
 				Out.registerDebugger(new FirebugAdapter());
 				isInBrowser = false;
-				_m.initialize();
-				
 			}
-			Out.status(this, "main constructor");
-			init();
-		}//end constructor
-		
-		protected function init():void{
-			Out.status(this, "init()");
-			
 			_loadConfigXML();
 			createTimer();
 			if(isInBrowser){
@@ -158,7 +152,7 @@ package {
 		}//end createTimer
 		
 		protected function showFirstState():void{
-			
+			Out.status(this, "showFirstState():");
 			//nextState = stateArray[0];
 			//switchState();			
 			//timer.start();
