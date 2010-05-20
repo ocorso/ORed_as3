@@ -57,56 +57,53 @@ package {
 		protected var isFirst:Boolean = true;
 		protected var isInBrowser:Boolean = true;
 		
-		protected var cl:URLLoader;
-		protected var l:BigLoader;
+		protected var _cl:URLLoader;
+		protected var _bl:BigLoader;
 		
 		private const configId:String
 		public function Main()
 		{
 			if(!stage) addEventListener(Event.ADDED_TO_STAGE,_init,false,0,true);
 			else _init();
-			
-			_init();
+
 		}//end constructor
 		
-		protected function _init():void{
+		protected function _init($evt:Event = null):void{
 			Out.status(this, "init()::");
 			removeEventListener(Event.ADDED_TO_STAGE,_init);
 			
 			_m = Model.getInstance();
-			_m.initialize();
+			_m.initialize(stage.loaderInfo);
 			
 			if(!Environment.IS_IN_BROWSER){
 				Out.enableAllLevels();
 				Out.registerDebugger(new ArthropodAdapter(true));
-				Out.registerDebugger(new FirebugAdapter());
+				
 				isInBrowser = false;
-			}
-			_loadConfigXML();
-			createTimer();
-			if(isInBrowser){
+			}else{
 				_pl = SiteLoader.getInstance().preloader_mc;
 				_pl.addEventListener(Event.COMPLETE, _onPreloderOut);
-			}else 
-				showFirstState();
+			}
+
+			_loadConfigXML();
 			
 		}//end function init
 		protected function _loadConfigXML():void{
-			cl = new URLLoader();
+			_cl = new URLLoader();
 			var configURL:String = _m.getBaseUrl() + Constants.CONFIG_XML_PATH + "config.xml";
 			var urlRequest:URLRequest = new URLRequest(configURL);
-			cl.addEventListener(Event.COMPLETE, _onConfigXMLLoaded);
-			cl.load(urlRequest);
+			_cl.addEventListener(Event.COMPLETE, _onConfigXMLLoaded);
+			_cl.load(urlRequest);
 		}//end function
 		protected function _onConfigXMLLoaded($evt):void{
 			Out.status(this, "config xml loaded");
 			_m.configXml = new XML($evt.target.data);
-			cl.removeEventListener(Event.COMPLETE, _onConfigXMLLoaded);
-			cl = null;
+			_cl.removeEventListener(Event.COMPLETE, _onConfigXMLLoaded);
+			_cl = null;
 			
 			_loadState = __LOAD_STATE_COMPONENTS_BEGIN;
-			//l = BigLoader("ComponentsID");
-			//l.addEventListener(Event.COMPLETE,  _onComponentsLoaded);
+			_bl = BigLoader("ComponentsID");
+			_bl.addEventListener(Event.COMPLETE,  _onComponentsLoaded);
 			_onComponentsLoaded();
 			//_createScreens();
 		}//end functoin
@@ -116,98 +113,23 @@ package {
 		}
 		private function _onComponentsLoaded($evt=null):void{
 			Out.status(this, "on comp load complete");
-			_pl.setComplete();
+			if (isInBrowser) _pl.setComplete();
+			else 				showFirstState();
 		}//end function
 		
 		protected function createScreens():void{
-			slide = new Sprite();
-			var fakeSprite:Shape = new Shape();
-			slide.addChild(fakeSprite);
-			addChild(slide);
-			
-			for each (var name:String in stateNames){
-				trace(name);
-				var locState:Homepage = new Homepage(name);
-				//locState.clicked.add(slideClicked);
-				stateArray.push(locState);
-			}//end for
-			
-		}//end create states
-		protected function createIndicator():void{
-			indicator = new Indicator();
-			indicator.x = 608;
-			indicator.y = 344;
-			indicator.introSignal.add(indicatorClicked);
-			//indicator.partySignal.add(indicatorClicked);
-			//indicator.springSignal.add(indicatorClicked);
-			//indicator.diySignal.add(indicatorClicked);
-			//indicator.antiSignal.add(indicatorClicked);
-			addChild(indicator);
-			
-		}//end create Indicator function
-		protected function createTimer():void{
-			timer = new Timer(timerDelay);
-			run = new NativeSignal(timer, TimerEvent.TIMER, TimerEvent);
-			run.add(switchState);
-		}//end createTimer
 		
+		}//end create screens
+		
+
 		protected function showFirstState():void{
 			Out.status(this, "showFirstState():");
-			//nextState = stateArray[0];
-			//switchState();			
-			//timer.start();
+
 			var mc:MovieClip = new Fpo();
 			addChild(mc);
 			mc.gotoAndPlay("IN_START");
 		}//end show first state
-		protected function switchState(e:TimerEvent=null):void{
-			indicator.mc.gotoAndStop(counter+1);
-			slide.addChildAt(nextState, 0);
-			var toFadeOut:DisplayObject = slide.getChildAt(1);
-			TweenLite.to(toFadeOut, .5, {alpha:0, onComplete:updateCurrent});
-			
-		}//end switch State
-		
-		protected function updateCurrent():void{
-			
-			if(counter == 4) counter=  0 
-			else counter++;
-			nextState = stateArray[counter];
-			slide.removeChildAt(slide.numChildren-1);
-			
-			//reset alpha
-			for each (var state:Homepage in stateArray){
-				state.alpha = 1;
-			}//end for each
-			
-		}//end fucntion update current
-		
-		
-		
-		protected function indicatorClicked(e:MouseEvent):void{
-			var desiredSlide:String = e.target.name;
-			if (desiredSlide == Homepage(slide.getChildAt(0)).stateName){
-				trace("do nothing");
-			}else{
-				trace("we want to fade to: "+desiredSlide);
-				timer.reset();
-				switch (desiredSlide){
-					case "sweeps": counter = 0;
-						break;
-					case "party" : counter = 1;
-						break;
-					case "spring" : counter = 2;
-						break;
-					case "diy" : counter = 3;
-						break;
-					case "anti" : counter = 4;
-					default : counter = 0;		
-				}//end switch
-				timer.start();
-				nextState = stateArray[counter];
-				switchState();
-			}//end else
-		}//end indicator clicked
+
 	
 	}//end class
 }//end package
