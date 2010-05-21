@@ -9,6 +9,8 @@ package net.ored.model
 
 	public class Model extends EventDispatcher
 	{
+		private static const CONFIG_DOMAIN					:String = "http://www.ored.net/";
+		private static const WP_PATH						:String = "php/wp-content/themes/oredtheme/";
 		private static var __instance						:Model;
 		
 		private var _configXml								:XML;
@@ -35,7 +37,7 @@ package net.ored.model
 			
 		 	
 			_flashvars = $loaderInfo.parameters;
-			_baseUrl = getFlashVar("baseUrl") ? unescape(getFlashVar("baseUrl")) : "http://owen.local/";
+			_baseUrl = getFlashVar("baseUrl") ? unescape(getFlashVar("baseUrl")) : CONFIG_DOMAIN;
 			
 			Out.info(this, "Here is the base URL: "+ _baseUrl);
 			
