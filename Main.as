@@ -102,8 +102,8 @@ package {
 			_cl = null;
 			
 			_loadState = __LOAD_STATE_COMPONENTS_BEGIN;
-			_bl = BigLoader("ComponentsID");
-			_bl.addEventListener(Event.COMPLETE,  _onComponentsLoaded);
+			//_bl = BigLoader("ComponentsID");
+			//_bl.addEventListener(Event.COMPLETE,  _onComponentsLoaded);
 			_onComponentsLoaded();
 			//_createScreens();
 		}//end functoin
