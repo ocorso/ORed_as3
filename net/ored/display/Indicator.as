@@ -1,4 +1,4 @@
-package net.ored.views
+package net.ored.display
 {
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;

@@ -15,6 +15,7 @@ package {
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.events.ProgressEvent;
 	import flash.events.TimerEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
@@ -22,8 +23,8 @@ package {
 	
 	import net.ored.model.Constants;
 	import net.ored.model.Model;
-	import net.ored.views.Homepage;
-	import net.ored.views.Indicator;
+	import net.ored.display.Homepage;
+	import net.ored.display.Indicator;
 	
 	import nl.demonsters.debugger.MonsterDebugger;
 	
@@ -59,6 +60,7 @@ package {
 		
 		protected var _cl:URLLoader;
 		protected var _bl:BigLoader;
+		protected var _ll:XMLList;
 		
 		private const configId:String
 		public function Main()
@@ -78,7 +80,6 @@ package {
 			if(!Environment.IS_IN_BROWSER){
 				Out.enableAllLevels();
 				Out.registerDebugger(new ArthropodAdapter(true));
-				
 				isInBrowser = false;
 			}else{
 				_pl = SiteLoader.getInstance().preloader_mc;
@@ -90,7 +91,7 @@ package {
 		}//end function init
 		protected function _loadConfigXML():void{
 			_cl = new URLLoader();
-			var configURL:String = _m.getBaseUrl() + Constants.CONFIG_XML_PATH + "config.xml";
+			var configURL:String = _m.getBaseUrl() + Constants.WP_PATH + Constants.XML_PATH + "config.xml";
 			var urlRequest:URLRequest = new URLRequest(configURL);
 			_cl.addEventListener(Event.COMPLETE, _onConfigXMLLoaded);
 			_cl.load(urlRequest);
@@ -102,17 +103,16 @@ package {
 			_cl = null;
 			
 			_loadState = __LOAD_STATE_COMPONENTS_BEGIN;
-			//_bl = BigLoader("ComponentsID");
-			//_bl.addEventListener(Event.COMPLETE,  _onComponentsLoaded);
-			_onComponentsLoaded();
-			//_createScreens();
-		}//end functoin
+			_ll = _m.getNodeByType(Constants.CONFIG_LOADABLES, Constants.CONFIG_COMPONENTS).component;
+			_startLoad();
+		}//end function
 		protected function _onPreloderOut($evt:Event):void{
 			showFirstState();
-			
 		}
-		private function _onComponentsLoaded($evt=null):void{
+		
+		private function _onComponentLoadComplete($evt=null):void{
 			Out.status(this, "on comp load complete");
+			
 			if (isInBrowser) _pl.setComplete();
 			else 				showFirstState();
 		}//end function
@@ -128,9 +128,69 @@ package {
 			var mc:MovieClip = new Fpo();
 			addChild(mc);
 			mc.gotoAndPlay("IN_START");
-		}//end show first state
+		}//end show first state	
+		
+		private function _loaderCleanUp():void {
+			if(_bl) {
+				_bl.addEventListener(ProgressEvent.PROGRESS,_onLoadProgress);
+				_bl.addEventListener(Event.COMPLETE, _onComponentLoadComplete);
+				_bl.destroy();
+				_bl = null;
+			}
+		}
+		private function _startLoad():void{
+			Out.status(this, "startLoad()::");
+			
+			_loaderCleanUp();
+			_bl = new BigLoader();
+			_bl.addEventListener(ProgressEvent.PROGRESS, _onLoadProgress, false,0,true);
+			_bl.addEventListener(Event.COMPLETE, _onComponentLoadComplete, false, 0, true);
+			
+			for (var n:uint = 0; n<_ll.length(); n++){
+				var swfPath:String = _ll[n].@swf || "";
+				var xmlPath:String = _ll[n].@xml || "";
+				if(swfPath!="") _bl.add(_m.getFilePath(swfPath, "swf"), _ll[n].@id +"_"+Constants.TYPE_SWF);
+				if(swfPath!="") _bl.add(_m.getFilePath(xmlPath, "xml"), _ll[n].@id +"_"+Constants.TYPE_XML);
+			}//end for
+			_bl.start();
+			
+		}//end function _startLoad
 
-	
+		private function _onLoadProgress($evt:ProgressEvent):void {
+			var itemsLoaded:Number = 0;
+			var itemsTotal:Number = 0;
+			
+			switch(_loadState)
+			{
+				case __LOAD_STATE_SCREEN_BEGIN:
+					itemsLoaded = 0;
+					itemsTotal = 2;
+					break;
+				
+				case __LOAD_STATE_SCREEN_COMPLETE:
+					itemsLoaded = 2;
+					itemsTotal = 2;
+					break;
+				
+				case __LOAD_STATE_SCREEN_SPECIFICS_BEGIN:
+					itemsLoaded = 1;
+					itemsTotal = 2;
+					break;
+				
+				case __LOAD_STATE_INITIAL_SCREEN_BEGIN:
+				case __LOAD_STATE_COMPONENTS_COMPLETE:
+					itemsLoaded = 1;
+					itemsTotal = 3;
+					break;
+				
+				case __LOAD_STATE_INITIAL_SCREEN_BEGIN:
+					itemsLoaded = 0;
+					itemsTotal = 3;
+					break;
+			}
+			
+			if(_pl) _pl.updateProgress($evt.bytesLoaded,$evt.bytesTotal,itemsLoaded,itemsTotal);
+		}
 	}//end class
 }//end package
 

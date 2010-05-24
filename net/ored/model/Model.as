@@ -9,36 +9,29 @@ package net.ored.model
 
 	public class Model extends EventDispatcher
 	{
-		private static const CONFIG_DOMAIN					:String = "http://www.ored.net/";
-		private static const WP_PATH						:String = "php/wp-content/themes/oredtheme/";
+		
 		private static var __instance						:Model;
 		
 		private var _configXml								:XML;
 		private var _baseUrl								:String;
 		private var _flashvars								:Object;
+		private var _useAbsolute							:Boolean;
 		private var _nextScreen								:String;
 		private var _currentScreen							:String;
-		
-		public static const CONFIG_SETTING					:String	= "setting";
-		public static const CONFIG_COMPONENTS				:String = "components";
-		public static const CONFIG_COMPONENT				:String = "component";
-		public static const CONFIG_SCREEN					:String = "screens";
-		public static const CONFIG_LOADABLES				:String = "loadables";
-		
-		public function Model(target:IEventDispatcher=null)
-		{
-			super(target);
-		}//end constructor
 		
 		public static function getInstance():Model{	return __instance || (__instance = new Model());}
 		
 		public function initialize($loaderInfo:LoaderInfo=null):void {
 			Out.status(this,"initialize();");
 			
-		 	
-			_flashvars = $loaderInfo.parameters;
-			_baseUrl = getFlashVar("baseUrl") ? unescape(getFlashVar("baseUrl")) : CONFIG_DOMAIN;
-			
+		 	if (Environment.IS_IN_BROWSER){
+				_flashvars = $loaderInfo.parameters;
+				_baseUrl = getFlashVar("baseUrl") ? unescape(getFlashVar("baseUrl")) : Constants.DEPLOY_DOMAIN;
+				_useAbsolute	= false;
+			}else{
+				_baseUrl 		= Constants.PRODUCTION_DOMAIN;
+				_useAbsolute 	= true;
+			}	
 			Out.info(this, "Here is the base URL: "+ _baseUrl);
 			
 		}//end function
@@ -57,5 +50,12 @@ package net.ored.model
 		public function getBaseUrl():String{ return _baseUrl;}
 		public function set configXml($xml:XML):void{ _configXml = $xml;}
 		public function getNodeByType($node:String, $att:String):XMLList{ return _configXml.child($node).(@type == $att);}
+		public function getFilePath($p:String, $t:String):String{
+			var path:String = "";
+			if (_useAbsolute) path += _baseUrl + Constants.WP_PATH;
+			path += _configXml.settings.setting.(@id == "path_"+$t).@value.toString();
+			path += $p;
+			return path;
+		}//end getFilePath Function
 	}//end class model
 }//end package 

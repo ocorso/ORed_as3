@@ -1,4 +1,4 @@
-package net.ored.views
+package net.ored.display
 {
 	/**
 	 * All states must implement the <code>IState</code> interface.
