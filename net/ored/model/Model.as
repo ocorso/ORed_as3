@@ -14,6 +14,7 @@ package net.ored.model
 		
 		private var _configXml								:XML;
 		private var _baseUrl								:String;
+		private var _themeUrl								:String;
 		private var _flashvars								:Object;
 		private var _useAbsolute							:Boolean;
 		private var _nextScreen								:String;
@@ -25,11 +26,13 @@ package net.ored.model
 			Out.status(this,"initialize();");
 			
 		 	if (Environment.IS_IN_BROWSER){
-				_flashvars = $loaderInfo.parameters;
-				_baseUrl = getFlashVar("baseUrl") ? unescape(getFlashVar("baseUrl")) : Constants.DEPLOY_DOMAIN;
-				_useAbsolute	= false;
+				_flashvars 		= $loaderInfo.parameters;
+				_baseUrl 		= getFlashVar("baseUrl") ? unescape(getFlashVar("baseUrl")) : Constants.PROD_DOMAIN;
+				_themeUrl		= getFlashVar("themeUrl");
+				_useAbsolute	= true;
 			}else{
-				_baseUrl 		= Constants.PRODUCTION_DOMAIN;
+				_baseUrl 		= Constants.DEV_DOMAIN;
+				_themeUrl 		= Constants.DEV_DOMAIN + Constants.WP_PATH;
 				_useAbsolute 	= true;
 			}	
 			Out.info(this, "Here is the base URL: "+ _baseUrl);
@@ -48,11 +51,13 @@ package net.ored.model
 		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		
 		public function getBaseUrl():String{ return _baseUrl;}
+		public function get themeUrl():String{ return _themeUrl;}
 		public function set configXml($xml:XML):void{ _configXml = $xml;}
+		public function get configXml():XML{ return _configXml;}
 		public function getNodeByType($node:String, $att:String):XMLList{ return _configXml.child($node).(@type == $att);}
 		public function getFilePath($p:String, $t:String):String{
 			var path:String = "";
-			if (_useAbsolute) path += _baseUrl + Constants.WP_PATH;
+			if (_useAbsolute) path += _themeUrl;
 			path += _configXml.settings.setting.(@id == "path_"+$t).@value.toString();
 			path += $p;
 			return path;

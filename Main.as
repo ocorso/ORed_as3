@@ -21,16 +21,16 @@ package {
 	import flash.net.URLRequest;
 	import flash.utils.Timer;
 	
-	import net.ored.model.Constants;
-	import net.ored.model.Model;
 	import net.ored.display.Homepage;
 	import net.ored.display.Indicator;
+	import net.ored.model.Constants;
+	import net.ored.model.Model;
 	
 	import nl.demonsters.debugger.MonsterDebugger;
 	
 	import org.osflash.signals.natives.NativeSignal;
 
-	[SWF(width="713", height="370", backgroundColor="#ffffff", frameRate="30")]
+	[SWF(width="713", height="370", backgroundColor="#ffffff", frameRate="24")]
 	public class Main extends MovieClip
 	{
 		private static const __LOAD_STATE_INIT						:String 		= "init";
@@ -48,7 +48,7 @@ package {
 		protected var stateArray					:Array = [];
 		
 		protected var slide:Sprite;
-		protected var indicator:Indicator;
+		//protected var indicator:Indicator;
 		protected var counter:int = 0;
 		protected var nextState:Homepage;
 		
@@ -62,7 +62,6 @@ package {
 		protected var _bl:BigLoader;
 		protected var _ll:XMLList;
 		
-		private const configId:String
 		public function Main()
 		{
 			if(!stage) addEventListener(Event.ADDED_TO_STAGE,_init,false,0,true);
@@ -91,26 +90,29 @@ package {
 		}//end function init
 		protected function _loadConfigXML():void{
 			_cl = new URLLoader();
-			var configURL:String = _m.getBaseUrl() + Constants.WP_PATH + Constants.XML_PATH + "config.xml";
+			var configURL:String = _m.themeUrl + Constants.XML_PATH + "config.xml";
 			var urlRequest:URLRequest = new URLRequest(configURL);
 			_cl.addEventListener(Event.COMPLETE, _onConfigXMLLoaded);
 			_cl.load(urlRequest);
 		}//end function
-		protected function _onConfigXMLLoaded($evt):void{
+		
+		protected function _onConfigXMLLoaded($e:Event):void{
 			Out.status(this, "config xml loaded");
-			_m.configXml = new XML($evt.target.data);
+			
+			_m.configXml = new XML($e.target.data);
+			Out.debug(this, _m.configXml);
 			_cl.removeEventListener(Event.COMPLETE, _onConfigXMLLoaded);
 			_cl = null;
 			
 			_loadState = __LOAD_STATE_COMPONENTS_BEGIN;
-			_ll = _m.getNodeByType(Constants.CONFIG_LOADABLES, Constants.CONFIG_COMPONENTS).component;
+			_ll = _m.getNodeByType(Constants.CONFIG_LOADABLES, Constants.CONFIG_SCREEN).component;
 			_startLoad();
 		}//end function
 		protected function _onPreloderOut($evt:Event):void{
 			showFirstState();
 		}
 		
-		private function _onComponentLoadComplete($evt=null):void{
+		private function _onComponentLoadComplete($e:Event=null):void{
 			Out.status(this, "on comp load complete");
 			
 			if (isInBrowser) _pl.setComplete();
@@ -125,7 +127,7 @@ package {
 		protected function showFirstState():void{
 			Out.status(this, "showFirstState():");
 
-			var mc:MovieClip = new Fpo();
+			var mc:MovieClip = _bl.getLoadedAssetById('home_swf');
 			addChild(mc);
 			mc.gotoAndPlay("IN_START");
 		}//end show first state	
@@ -150,11 +152,11 @@ package {
 				var swfPath:String = _ll[n].@swf || "";
 				var xmlPath:String = _ll[n].@xml || "";
 				if(swfPath!="") _bl.add(_m.getFilePath(swfPath, "swf"), _ll[n].@id +"_"+Constants.TYPE_SWF);
-				if(swfPath!="") _bl.add(_m.getFilePath(xmlPath, "xml"), _ll[n].@id +"_"+Constants.TYPE_XML);
+				if(xmlPath!="") _bl.add(_m.getFilePath(xmlPath, "xml"), _ll[n].@id +"_"+Constants.TYPE_XML);
 			}//end for
 			_bl.start();
 			
-		}//end function _startLoad
+		}//end function _startLoad 
 
 		private function _onLoadProgress($evt:ProgressEvent):void {
 			var itemsLoaded:Number = 0;

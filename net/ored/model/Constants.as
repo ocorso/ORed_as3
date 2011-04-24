@@ -3,8 +3,8 @@ package net.ored.model
 	public class Constants
 	{
 		//url stuff
-		public static const DEPLOY_DOMAIN					:String = "http://www.ored.net/";
-		public static const PRODUCTION_DOMAIN				:String = "http://owen.local/"
+		public static const PROD_DOMAIN					:String = "http://ored.net/";
+		public static const DEV_DOMAIN						:String = "http://ored.local/"
 		public static const WP_PATH							:String = "php/wp-content/themes/oredtheme/";
 		public static const XML_PATH						:String = "xml/site/";
 		

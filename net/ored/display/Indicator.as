@@ -10,7 +10,7 @@ package net.ored.display
 	
 	public class Indicator extends Sprite
 	{
-		public var mc:Indicator_mc;
+		public var mc:MovieClip;
 		
 		//here are what are supposed to be events
 		public var introSignal:NativeSignal;
@@ -23,7 +23,7 @@ package net.ored.display
 		{
 			
 			super();
-			mc = new Indicator_mc();
+			mc = new MovieClip();
 			init();
 		}//end constructor
 		
